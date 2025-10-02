@@ -33,7 +33,7 @@ class IroyomiWindow(QWidget):
     """
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("色読み (3連続防止版)")
+        self.setWindowTitle("色読み (2連続防止版)")
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 
         self.grid_layout = QGridLayout()
@@ -43,7 +43,7 @@ class IroyomiWindow(QWidget):
 
     def populate_grid(self):
         """
-        グリッドに色と文字が一致せず、かつ水平方向に同じ色が3連続しないように
+        グリッドに色と文字が一致せず、かつ水平方向に同じ色が2連続しないように
         ランダムなラベルを配置する
         """
         kanji_list = list(KANJI_COLORS.keys())
@@ -56,7 +56,6 @@ class IroyomiWindow(QWidget):
         font.setBold(True)
 
         for row in range(ROWS):
-            # <<< 変更点 >>> 行ごとに直前の色を記録するリストを初期化
             previous_colors = [] 
             
             for col in range(COLS):
@@ -66,10 +65,10 @@ class IroyomiWindow(QWidget):
                 # 2. 色の候補リストを作成（文字の意味と一致しない色）
                 allowed_colors = [k for k in kanji_list if k != display_kanji]
 
-                # <<< 変更点 >>> 3連続を避けるためのロジック
-                # 列が2つ以上進んでいて、かつ直前2つの色が同じ場合
-                if len(previous_colors) >= 2 and previous_colors[-1] == previous_colors[-2]:
-                    color_to_avoid = previous_colors[-1]
+                # <<< 変更点 >>> 2連続を避けるためのロジック
+                # 直前に色がある場合（＝最初の列でない場合）
+                if previous_colors:
+                    color_to_avoid = previous_colors[-1] # 直前の色を取得
                     # 候補リストから、避けるべき色を削除
                     if color_to_avoid in allowed_colors:
                         allowed_colors.remove(color_to_avoid)
@@ -78,12 +77,10 @@ class IroyomiWindow(QWidget):
                 if not allowed_colors:
                     allowed_colors = [k for k in kanji_list if k != display_kanji]
 
-
                 # 3. 最終的な色を候補リストからランダムに選択
                 color_kanji = random.choice(allowed_colors)
                 color_name = KANJI_COLORS[color_kanji]
                 
-                # <<< 変更点 >>> 決定した色を記録リストに追加
                 previous_colors.append(color_kanji)
 
                 # 4. ラベルを作成して設定
@@ -94,6 +91,7 @@ class IroyomiWindow(QWidget):
 
                 # 5. グリッドレイアウトにラベルを追加
                 self.grid_layout.addWidget(label, row, col)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
