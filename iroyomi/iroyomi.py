@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
 )
-from PySide6.QtGui import QFont, QColor
+from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
 # --- 定数設定 ---
@@ -33,10 +33,9 @@ class IroyomiWindow(QWidget):
     """
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("色読み")
+        self.setWindowTitle("色読み (3連続防止版)")
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        # メインのレイアウトとしてグリッドレイアウトを設定
         self.grid_layout = QGridLayout()
         self.setLayout(self.grid_layout)
 
@@ -44,13 +43,11 @@ class IroyomiWindow(QWidget):
 
     def populate_grid(self):
         """
-        グリッドに色と文字が一致しないようにランダムなラベルを配置する
+        グリッドに色と文字が一致せず、かつ水平方向に同じ色が3連続しないように
+        ランダムなラベルを配置する
         """
         kanji_list = list(KANJI_COLORS.keys())
-
-        # フォントサイズをセルの高さに基づいて動的に計算
-        # ウィンドウの高さを行数で割り、セルの高さを算出
-        # その高さの約半分をフォントのピクセルサイズとする
+        
         cell_height = self.height() / ROWS
         font_pixel_size = int(cell_height * 0.5)
 
@@ -59,30 +56,46 @@ class IroyomiWindow(QWidget):
         font.setBold(True)
 
         for row in range(ROWS):
+            # <<< 変更点 >>> 行ごとに直前の色を記録するリストを初期化
+            previous_colors = [] 
+            
             for col in range(COLS):
                 # 1. 表示する文字をランダムに選択
                 display_kanji = random.choice(kanji_list)
 
-                # 2. 表示する色をランダムに選択（ただし、文字の意味と一致しないように）
-                #    色の候補リストから、表示する文字を除外する
-                possible_colors = [k for k in kanji_list if k != display_kanji]
-                color_kanji = random.choice(possible_colors)
-                color_name = KANJI_COLORS[color_kanji]
+                # 2. 色の候補リストを作成（文字の意味と一致しない色）
+                allowed_colors = [k for k in kanji_list if k != display_kanji]
 
-                # 3. ラベルを作成して設定
+                # <<< 変更点 >>> 3連続を避けるためのロジック
+                # 列が2つ以上進んでいて、かつ直前2つの色が同じ場合
+                if len(previous_colors) >= 2 and previous_colors[-1] == previous_colors[-2]:
+                    color_to_avoid = previous_colors[-1]
+                    # 候補リストから、避けるべき色を削除
+                    if color_to_avoid in allowed_colors:
+                        allowed_colors.remove(color_to_avoid)
+                
+                # エッジケース対応: もし候補がなくなったら全候補から選ぶ
+                if not allowed_colors:
+                    allowed_colors = [k for k in kanji_list if k != display_kanji]
+
+
+                # 3. 最終的な色を候補リストからランダムに選択
+                color_kanji = random.choice(allowed_colors)
+                color_name = KANJI_COLORS[color_kanji]
+                
+                # <<< 変更点 >>> 決定した色を記録リストに追加
+                previous_colors.append(color_kanji)
+
+                # 4. ラベルを作成して設定
                 label = QLabel(display_kanji)
                 label.setFont(font)
                 label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                # 4. スタイルシートで文字色を設定
                 label.setStyleSheet(f"color: {color_name};")
 
                 # 5. グリッドレイアウトにラベルを追加
                 self.grid_layout.addWidget(label, row, col)
 
-
 if __name__ == "__main__":
-    # PySide6アプリケーションの実行
     app = QApplication(sys.argv)
     window = IroyomiWindow()
     window.show()
