@@ -13,23 +13,22 @@ COLORS = {
     "yellow": {"normal": "#fbbc05", "light": "#fdd663", "jp": "黄"},
     "blue":   {"normal": "#4285f4", "light": "#8ab4f8", "jp": "青"},
 }
-FLASH_DURATION = 400
+FLASH_DURATION = 400  # コンピュータの点灯時間
+CLICK_FEEDBACK_DURATION = 150 # プレイヤーのクリック時の点灯時間
 LEVEL_DELAY = 1000
 
 class SimonGame(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("パターン記憶ゲーム (修正版)")
+        self.setWindowTitle("パターン記憶ゲーム (v3)")
         self.setFixedSize(400, 500)
 
-        # --- ゲームの状態管理用変数 ---
         self.sequence = []
         self.player_input = []
         self.player_sequence_pos = 0
         self.is_player_turn = False
         self.buttons = {}
 
-        # --- UIのセットアップ ---
         main_layout = QVBoxLayout()
         
         self.status_label = QLabel("スタートボタンを押してください")
@@ -47,11 +46,9 @@ class SimonGame(QWidget):
             color = color_names[i]
             button = QPushButton()
             button.setMinimumSize(150, 150)
-            button.setStyleSheet(f"background-color: {COLORS[color]['normal']}; border-radius: 10px;")
-            
-            # <<< ここを修正 >>>
+            # <<< 変更: スタイルに 'border: none' を追加
+            button.setStyleSheet(f"background-color: {COLORS[color]['normal']}; border-radius: 10px; border: none;")
             button.clicked.connect(lambda checked=False, c=color: self.on_color_button_clicked(c))
-            
             self.buttons[color] = button
             grid_layout.addWidget(button, pos[0], pos[1])
 
@@ -86,18 +83,16 @@ class SimonGame(QWidget):
 
     def play_sequence(self):
         self._flash_index = 0
-        self.flash_color()
+        self.flash_color_in_sequence()
 
-    def flash_color(self):
+    def flash_color_in_sequence(self):
+        """コンピュータのシーケンスを1つずつ点灯させる"""
         if self._flash_index < len(self.sequence):
             color = self.sequence[self._flash_index]
-            button = self.buttons[color]
-            
-            button.setStyleSheet(f"background-color: {COLORS[color]['light']}; border-radius: 10px;")
-            QTimer.singleShot(FLASH_DURATION, lambda b=button, c=color: b.setStyleSheet(f"background-color: {COLORS[c]['normal']}; border-radius: 10px;"))
+            self.flash_button(color, FLASH_DURATION) # <<< 変更: 共通の点灯メソッドを呼ぶ
             
             self._flash_index += 1
-            QTimer.singleShot(FLASH_DURATION * 2, self.flash_color)
+            QTimer.singleShot(FLASH_DURATION * 2, self.flash_color_in_sequence)
         else:
             self.is_player_turn = True
             self.status_label.setText("あなたの番です")
@@ -108,12 +103,14 @@ class SimonGame(QWidget):
         if not self.is_player_turn:
             return
 
+        self.flash_button(color, CLICK_FEEDBACK_DURATION) # <<< 追加: クリックフィードバック
         self.player_input.append(color)
 
         if color == self.sequence[self.player_sequence_pos]:
             self.player_sequence_pos += 1
             if self.player_sequence_pos == len(self.sequence):
                 self.status_label.setText("正解！")
+                self.is_player_turn = False # <<< 追加: 次のレベルに行くまで入力を無効化
                 QTimer.singleShot(LEVEL_DELAY, self.next_level)
         else:
             self.game_over()
@@ -133,6 +130,17 @@ class SimonGame(QWidget):
         self.status_label.setText(message)
         self.start_button.setEnabled(True)
         self.start_button.setText("もう一度挑戦")
+        
+    def flash_button(self, color, duration):
+        """ <<< 新設: ボタンを点灯させる共通メソッド >>> """
+        button = self.buttons[color]
+        normal_style = f"background-color: {COLORS[color]['normal']}; border-radius: 10px; border: none;"
+        # 点灯時のスタイルに太い白枠を追加
+        light_style = f"background-color: {COLORS[color]['light']}; border-radius: 10px; border: 4px solid white;"
+        
+        button.setStyleSheet(light_style)
+        QTimer.singleShot(duration, lambda: button.setStyleSheet(normal_style))
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
