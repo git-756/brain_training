@@ -31,3 +31,7 @@
 ```bash
 rye run python memory_games/simon_says.py
 ```
+
+# 作成軌跡
+【Python/PySide6】ユーザーと共に育てる！パターン記憶ゲーム開発の全ステップまとめ 
+https://samurai-human-go.com/python-pyside6-iterative-development-story/

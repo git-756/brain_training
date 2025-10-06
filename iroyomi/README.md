@@ -28,3 +28,7 @@
 ```bash
 rye run python iroyomi/iroyomi.py
 ```
+
+# 作成軌跡
+【Pythonで脳トレアプリ開発】ロジックを進化させろ！「色読み」グリッド作成の全思考プロセス 
+https://samurai-human-go.com/python-pyside6-development-process/
