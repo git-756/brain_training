@@ -24,7 +24,7 @@
 ## ## 実行方法
 
 プロジェクトのルートディレクトリから、以下のコマンドを実行してください。
-
+    
 ```bash
 rye run python iroyomi/iroyomi.py
 ```
