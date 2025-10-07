@@ -35,8 +35,12 @@ rye run python memory_games/simon_says.py
 ```
 
 ## 📜 ライセンス
-このプロジェクトは [MIT License](LICENSE) の下で公開されています。
 
-# 作成者
-Samurai-Human-Go
-https://samurai-human-go.com
+このプロジェクトは **MIT License** のもとで公開されています。ライセンスの全文については、[LICENSE](LICENSE) ファイルをご覧ください。
+
+また、このプロジェクトはサードパーティ製のライブラリを利用しています。これらのライブラリのライセンス情報については、[NOTICE.md](NOTICE.md) ファイルに記載しています。
+
+## 作成者
+[Samurai-Human-Go](https://samurai-human-go.com/%e9%81%8b%e5%96%b6%e8%80%85%e6%83%85%e5%a0%b1/)
+
+**ブログ記事**: [【Python/PySide6】ユーザーと共に育てる！パターン記憶ゲーム開発の全ステップまとめ](https://samurai-human-go.com/python-pyside6-iterative-development-story/)
